@@ -7,9 +7,11 @@ void (*ControlChain::unassignment_cb)(int) = 0;
 void (*ControlChain::update_cb)(cc_assignment_t *) = 0;
 
 void ControlChain::begin() {
+#ifndef ARDUINO_TEENSY41
     // pin 2 is used to enable transceiver
     pinMode(TX_DRIVER_PIN, OUTPUT);
     digitalWrite(TX_DRIVER_PIN, LOW);
+#endif
 
     // generate seed by reading ADC
     int seed = 0;
@@ -19,11 +21,18 @@ void ControlChain::begin() {
     // init random generator
     srand(seed);
 
+#ifdef ARDUINO_TEENSY41
+    Serial.begin(CC_BAUD_RATE_FALLBACK);
+#else
     CCSerial.begin(CC_BAUD_RATE_FALLBACK);
+#endif
     cc_init(responseCB, eventsCB);
 }
 
 void ControlChain::run() {
+#ifdef ARDUINO_TEENSY41
+    serialEvent();
+#endif
     cc_process();
 }
 
@@ -51,7 +60,11 @@ void ControlChain::setEventCallback(int event_id, void (*function_cb)(void *arg)
 
 void ControlChain::responseCB(void *arg) {
     cc_data_t *response = (cc_data_t *) arg;
+#ifdef ARDUINO_TEENSY41
+    Serial.write(response->data, response->size);
+#else
     CCSerial.write(response->data, response->size);
+#endif
 }
 
 void ControlChain::eventsCB(void *arg) {
@@ -75,3 +88,22 @@ void ControlChain::eventsCB(void *arg) {
             update_cb(assignment);
     }
 }
+
+#ifdef ARDUINO_TEENSY41
+void ControlChain::serialEvent(void) {
+    uint8_t buffer[32];
+
+    cc_data_t received;
+    received.data = buffer;
+    received.size = Serial.available();
+
+    if (received.size > sizeof(buffer))
+        received.size = sizeof(buffer);
+
+    if (received.size > 0)
+    {
+        Serial.readBytes((char*)received.data, received.size);
+        cc_parse(&received);
+    }
+}
+#endif

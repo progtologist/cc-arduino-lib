@@ -12,6 +12,10 @@
 #include <DueTimer.h>
 #endif
 
+#ifdef ARDUINO_TEENSY41
+#include <TimerOne.h>
+#endif
+
 #include <Arduino.h>
 #include "timer.h"
 
@@ -67,7 +71,7 @@ static void timer1_callback(void)
 
 void timer_init(void (*callback)(void))
 {
-#ifdef ARDUINO_ARCH_AVR
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_TEENSY41)
     Timer1.initialize();
 #endif
 

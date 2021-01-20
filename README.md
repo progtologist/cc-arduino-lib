@@ -117,3 +117,11 @@ you are supposed to be running the Pot example code. If it's still not working, 
 few other elements in the setup as USB cable, arduino core code and cc-master, is more likely to be
 a bug in the Control Chain library. In that case please make a bug report stating the Arduino
 platform you are using and also that you have followed and executed the tests described here.
+
+## Teensy Modification
+
+The changes implemented in this fork allow the library to work on a Teensy 4.1 (potentially even
+more teensy boards as well) over the USB Serial interface.
+
+The USB Serial replaces the HWSerial required for the arduino boards, which means that your device
+no longer requires the Arduino Shield that MOD Devices sells.

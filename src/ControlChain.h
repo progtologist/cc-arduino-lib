@@ -20,7 +20,9 @@ class ControlChain {
     private:
         static void responseCB(void *arg);
         static void eventsCB(void *arg);
-
+#ifdef ARDUINO_TEENSY41
+        static void serialEvent(void);
+#endif
         static void (*assignment_cb)(cc_assignment_t *assignment);
         static void (*unassignment_cb)(int actuator_id);
         static void (*update_cb)(cc_assignment_t *assignment);
